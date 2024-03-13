@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "check_dependencies"
-  spec.version       = "0.1.1"
+  spec.version       = "0.1.2"
   spec.authors       = ["ITxiansheng"]
   spec.email         = ["itxiansheng@gmail.com"]
 

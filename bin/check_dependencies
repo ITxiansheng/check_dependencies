@@ -203,7 +203,7 @@ end.parse!
 
 # Check if all required arguments were provided
 if options[:lockPath].nil? || options[:depWay].nil? || options[:configPath].nil?
-  puts "Please provide lockPath, depWay, and configPath parameters.\n  you can run:\n ruby MapHelper.rb --help "
+  puts "Please provide lockPath, depWay, and configPath parameters.\n  you can run:\n check_dependencies --help "
   exit
 end
 
