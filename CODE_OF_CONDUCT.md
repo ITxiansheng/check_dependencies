@@ -1,39 +1,79 @@
-# CheckDependencies
+```markdown
+# check_dependencies Gem
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/check_dependencies`. To experiment with that code, run `bin/console` for an interactive prompt.
+check_dependencies Gem is a Ruby gem that offers utilities to assist in managing CocoaPods dependencies within iOS projects. This gem provides functionality to dynamically switch between local path-based dependencies and remote git branch-based dependencies.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Install the gem by adding it to your Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
+```ruby
+gem 'check_dependencies', git: 'https://github.com/ITxiansheng/check_dependencies.git'
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+And then execute:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+```bash
+$ bundle install
+```
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+Or install it yourself as:
+
+```bash
+$ gem install check_dependencies
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+The gem provides a command-line interface for interacting with its functionalities. You can use the `check_dependencies` command followed by appropriate options.
+```bash
+check_dependencies --help
+``` 
+### Command Syntax
 
-## Development
+```bash
+check_dependencies --lockPath LOCK_PATH --depWay DEP_WAY --configPath CONFIG_PATH
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+### Options
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+- `--lockPath LOCK_PATH`: Specifies the path to your Podfile.lock file.
+- `--depWay DEP_WAY`: Specifies the dependency mode. This can be either `path` for local path dependencies or `branch` for remote git branch dependencies.
+- `--configPath CONFIG_PATH`: Specifies the path to the configuration file containing dependency configurations.
+
+### Example
+
+```bash
+check_dependencies --lockPath ./Podfile.lock --depWay path --configPath ./repo_configs.txt
+```
+
+## Functions Overview
+
+The gem provides the following key functionalities:
+
+- Parsing `Podfile.lock` content to extract pod dependencies.
+- Generating Podfile entries for local path or remote git branch dependencies.
+- Processing and formatting dependencies for correct integration into Podfiles.
+
+## Workflow
+
+1. **Configuration Preparation**: Prepare the `repo_configs` file with the necessary configuration for each library. This file should map library names to their configuration, including local path, branch name, and git URL.
+
+2. **Running the Gem**: Execute the gem with the required options. Based on the specified `depWay`, the gem will process the `Podfile.lock` file and the `repo_configs` to output the necessary Podfile entries.
+
+3. **Integration**: After generating the Podfile entries, integrate them into your Podfile as needed. This allows you to switch between using local versions of libraries (for development or debugging) and their remote versions (for production or shared development).
+
+## Note
+
+- Ensure that the `repo_configs` file is properly formatted and from a trusted source to avoid potential security risks.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/check_dependencies. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/check_dependencies/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at [example/check_dependencies](https://github.com/ITxiansheng/check_dependencies). This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/ITxiansheng/check_dependencies/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+```
 
-## Code of Conduct
-
-Everyone interacting in the CheckDependencies project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/check_dependencies/blob/main/CODE_OF_CONDUCT.md).
+This README provides an overview of the gem's installation, usage, functions, workflow, notes, contributing guidelines, and license information. Adjust as needed for your specific project and preferences.
