@@ -7,7 +7,7 @@ check_dependencies Gem is a Ruby gem that offers utilities to assist in managing
 
 Install the gem by adding it to your Gemfile:
 
-```ruby
+```bash
 gem 'check_dependencies', git: 'https://github.com/ITxiansheng/check_dependencies.git'
 ```
 
@@ -22,6 +22,13 @@ Or install it yourself as:
 ```bash
 $ gem install check_dependencies
 ```
+
+Remember to add GEM_BIN_DIR to your PATH.
+
+you can run :
+```bash
+ curl -sSL https://raw.githubusercontent.com/ITxiansheng/check_dependencies/main/gem_env_install.sh | bash
+ ```
 
 ## Usage
 
