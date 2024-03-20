@@ -24,7 +24,7 @@ global_options = OptionParser.new do |opts|
   opts.separator "  gen_pod: Generate podfile entries for new dependencies"
   opts.separator "  dif_pod: Generate differences between Podfile.lock files"
   opts.separator ""
-  opts.separator "For command-specific help, run: script.rb [command] --help"
+  opts.separator "For command-specific help, run: check_dependencies [command] --help"
 end
 
 gen_pod_config_string = <<~CONFIG
