@@ -1,5 +1,81 @@
 
 #!/usr/bin/env ruby
+# Usage Hint
+require 'optparse'
+require 'json'
+require 'set'
+
+# Method to check for required options and print usage if missing
+def check_required_options(options, required_keys, parser)
+  missing_options = required_keys.select { |key| options[key].nil? }
+  unless missing_options.empty?
+    puts "Missing required options: #{missing_options.join(', ')}"
+    puts parser
+    exit
+  end
+end
+
+# Define and parse options based on the command
+options = {}
+global_options = OptionParser.new do |opts|
+  opts.banner = "Usage: script.rb [command] [options]"
+  opts.separator ""
+  opts.separator "Commands:"
+  opts.separator "  gen_pod: Generate podfile entries for new dependencies"
+  opts.separator "  dif_pod: Generate differences between Podfile.lock files"
+  opts.separator ""
+  opts.separator "For command-specific help, run: script.rb [command] --help"
+end
+
+gen_pod_config_string = <<~CONFIG
+{
+  "A": {
+    "branch": "release",
+    "path": "XXXXXXXXXXXXXXX",
+    "git_url": "XXXXXXXXXXXXXXX"
+  },
+  "B": {
+    "branch": "release",
+    "path": "XXXXXXXXXXXXXXX",
+    "git_url": "XXXXXXXXXXXXXXX"
+  },
+}
+CONFIG
+
+dif_pod_config_string = <<~CONFIG
+[
+  "A",
+  "B"
+]
+CONFIG
+
+
+command = ARGV.shift
+case command
+when "gen_pod"
+command_options = OptionParser.new do |opts|
+    opts.banner = "Usage: gen_pod --lockPath LOCK_PATH --depWay DEP_WAY [--configPath CONFIG_PATH]"
+    opts.on("--lockPath LOCK_PATH", String, "Specify the Podfile.lock path") { |v| options[:lockPath] = v }
+    opts.on("--depWay DEP_WAY", String, "Specify the depWay parameter (path or branch)") { |v| options[:depWay] = v }
+    opts.on("--configPath CONFIG_PATH", String, "Specify the path to repo_configs\n\n\n repo_configs examples:\n#{gen_pod_config_string}") { |v| options[:configPath] = v }
+  end.parse!(ARGV)
+  check_required_options(options, [:lockPath, :depWay, :configPath], command_options)
+
+when "dif_pod"
+  command_options = OptionParser.new do |opts|
+    opts.banner = "Usage: dif_pod --oldLockPath OLD_LOCK_PATH --newLockPath NEW_LOCK_PATH [--configPath CONFIG_PATH]"
+    opts.on("--oldLockPath OLD_LOCK_PATH", String, "Specify old Podfile.lock path") { |v| options[:oldLockPath] = v }
+    opts.on("--newLockPath NEW_LOCK_PATH", String, "Specify new Podfile.lock path") { |v| options[:newLockPath] = v }
+    opts.on("--configPath CONFIG_PATH", String, "Specify the path of conf which contains dif libs (optional) \n\n\n repo_configs examples:\n#{dif_pod_config_string}") { |v| options[:configPath] = v }
+  end.parse!(ARGV)
+  check_required_options(options, [:oldLockPath, :newLockPath], command_options)
+
+else
+  puts global_options
+  exit
+end
+
+
 # Analyzes the Podfile.lock content to extract pod dependencies
 def analyze_podfile_lock(podfile_lock_content)
   unless podfile_lock_content.is_a?(String)
@@ -160,69 +236,72 @@ def generate_map_path_podfiles(lockPath, repo_configs)
   podfile_entrys.join("\n")
 end
 
-require 'optparse'
-require 'json'
 
-options = {}
-OptionParser.new do |opts|
-  opts.banner = "Usage: check_dependencies --lockPath LOCK_PATH --depWay DEP_WAY --configPath CONFIG_PATH"
+def colorize(text, color_code)
+  "\e[#{color_code}m#{text}\e[0m"
+end
+def red(text); colorize(text, 31); end
+def green(text); colorize(text, 32); end
 
-  opts.on("--lockPath LOCK_PATH", "Specify the Podfile.lock path") do |lockPath|
-    options[:lockPath] = lockPath
+def read_json_array_from_file_as_set(file_path)
+  # 确保文件存在
+  if File.exist?(file_path)
+    # 读取文件内容
+    file_content = File.read(file_path)
+    # 解析 JSON 字符串为 Ruby 数组
+    json_array = JSON.parse(file_content)
+    # 将数组转换为 Set 并返回
+    return json_array.to_set
+  else
+    puts "File not found: #{file_path}"
+    exit
   end
+rescue JSON::ParserError => e
+  puts "Error parsing JSON from #{file_path}: #{e.message}"
+  exit
+end
 
-  opts.on("--depWay DEP_WAY", "Specify the depWay parameter (path or branch)") do |depWay|
-    options[:depWay] = depWay
-  end
-
-  # repo_configs examples
-  config_string = <<~CONFIG
-    repo_configs = {
-      'Lib1' => {
-        "branch" => "dev1",
-        "path" => "/Users/xxxxxxxxx/xxxxlib",
-        "git_url" => "xxxxxxxxxxxxxxxxxx"
-      },
-      'Lib2' => {
-        "branch" => "dev2",
-        "path" => "/Users/xxxxxxxxx/xxxxlib",
-        "git_url" => "xxxxxxxxxxxxxxxxxx"
-      },
-      'Lib3' => {
-        "branch" => "dev3",
-        "path" => "/Users/xxxxxxxxx/xxxxlib",
-        "git_url" => "xxxxxxxxxxxxxxxxxx"
-      }
-    }
-  CONFIG
+def compare_podfile_locks(old_lock_path, new_lock_path, config_path = nil)
+  config_set = read_json_array_from_file_as_set(config_path)
   
-  opts.on("--configPath CONFIG_PATH", "Specify the path to repo_configs\n\n\n repo_configs examples:\n #{config_string}") do |configPath|
-    options[:configPath] = configPath
+  old_pods = read_local_podfile_lock(old_lock_path)
+  new_pods = read_local_podfile_lock(new_lock_path)
+
+  old_unique_deps = find_shortest_paths(extract_unique_dependencies(old_pods)).to_set
+  new_unique_deps = find_shortest_paths(extract_unique_dependencies(new_pods)).to_set
+  if !config_set.empty?
+      old_unique_deps = old_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
+      new_unique_deps = new_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
   end
-end.parse!
-
-# Check if all required arguments were provided
-if options[:lockPath].nil? || options[:depWay].nil? || options[:configPath].nil?
-  puts "Please provide lockPath, depWay, and configPath parameters.\n  you can run:\n check_dependencies --help "
-  exit
+  only_in_old = old_unique_deps - new_unique_deps
+  only_in_new = new_unique_deps - old_unique_deps
+  
+  # 检查差异并决定退出状态
+  if only_in_old.empty? && only_in_new.empty?
+    puts "没有差异，成功退出"
+    exit 0
+  else
+    puts "存在差异："
+    only_in_old.each { |dep| puts "#{red('-')} #{dep}" }
+    only_in_new.each { |dep| puts "#{green('+')} #{dep}" }
+    exit 1
+  end
 end
 
-# Function to read and parse the repo_configs.txt file
-def read_repo_configs(config_path)
-  content = File.read(config_path)
-  eval(content) # Using eval to parse the Ruby hash from the file, be cautious with its use!
-rescue
-  puts "Failed to read or parse the repo_configs from #{config_path}"
-  exit
+if command == "gen_pod"
+    file_content = File.read(options[:configPath])
+    puts file_content
+    repo_configs =JSON.parse(file_content)
+    puts repo_configs
+    # Calls before pod install complete
+    if options[:depWay] == "path"
+        generate_map_path_podfiles(options[:lockPath], repo_configs)
+    elsif options[:depWay] == "branch"
+        generate_map_branch_podfiles(options[:lockPath], repo_configs)
+    else
+      puts "Invalid argument. Please provide 'path' or 'branch'."
+    end
+elsif command == "dif_pod"
+  compare_podfile_locks(options[:oldLockPath], options[:newLockPath], options[:configPath])
 end
 
-repo_configs = read_repo_configs(options[:configPath])
-
-# Calls before pod install complete
-if options[:depWay] == "path"
-    generate_map_path_podfiles(options[:lockPath], repo_configs)
-elsif options[:depWay] == "branch"
-    generate_map_branch_podfiles(options[:lockPath], repo_configs)
-else
-  puts "Invalid argument. Please provide 'path' or 'branch'."
-end

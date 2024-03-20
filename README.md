@@ -1,86 +1,90 @@
-```markdown
-# check_dependencies Gem
+Based on your script, which involves generating podfile entries and comparing Podfile.lock files, here's a README outline that explains how to use it. You can customize this template to better fit your script's specifics and requirements.
 
-check_dependencies Gem is a Ruby gem that offers utilities to assist in managing CocoaPods dependencies within iOS projects. This gem provides functionality to dynamically switch between local path-based dependencies and remote git branch-based dependencies.
+---
 
-## Installation
+# Podfile Utilities Script
 
-Install the gem by adding it to your Gemfile:
+This script provides utilities for iOS development with CocoaPods, including generating podfile entries for new dependencies and comparing differences between `Podfile.lock` files. It's designed to facilitate the management of dependencies in large-scale iOS projects.
 
-```bash
-gem 'check_dependencies', git: 'https://github.com/ITxiansheng/check_dependencies.git'
-```
+## Features
 
-And then execute:
+- **Generate Podfile Entries**: Automatically generates podfile entries for dependencies specified in a configuration file.
+- **Compare Podfile.lock Files**: Compares two `Podfile.lock` files and highlights the added or removed dependencies, similar to a git diff.
 
-```bash
-$ bundle install
-```
+## Requirements
 
-Or install it yourself as:
-
-```bash
-$ gem install check_dependencies
-```
-
-Remember to add GEM_BIN_DIR to your PATH.
-
-you can run :
-```bash
- curl -sSL https://raw.githubusercontent.com/ITxiansheng/check_dependencies/main/gem_env_install.sh | bash
- ```
+- Ruby (version 2.5 or later)
+- JSON files for specifying dependencies
 
 ## Usage
 
-The gem provides a command-line interface for interacting with its functionalities. You can use the `check_dependencies` command followed by appropriate options.
-```bash
-check_dependencies --help
-``` 
-### Command Syntax
+### Generating Podfile Entries
 
-```bash
-check_dependencies --lockPath LOCK_PATH --depWay DEP_WAY --configPath CONFIG_PATH
+To generate new podfile entries based on a JSON configuration:
+
+```shell
+ruby script.rb gen_pod --lockPath <path_to_Podfile.lock> --depWay <path_or_branch> --configPath <path_to_config.json>
 ```
 
-### Options
+- `lockPath`: Path to your `Podfile.lock`.
+- `depWay`: Specify "path" or "branch" to indicate how the dependencies are to be fetched.
+- `configPath`: Path to your JSON configuration file listing the dependencies.
 
-- `--lockPath LOCK_PATH`: Specifies the path to your Podfile.lock file.
-- `--depWay DEP_WAY`: Specifies the dependency mode. This can be either `path` for local path dependencies or `branch` for remote git branch dependencies.
-- `--configPath CONFIG_PATH`: Specifies the path to the configuration file containing dependency configurations.
+**Example JSON Configuration (`gen_pod_config.json`):**
 
-### Example
-
-```bash
-check_dependencies --lockPath ./Podfile.lock --depWay path --configPath ./repo_configs.txt
+```json
+{
+  "A": {
+    "branch": "release",
+    "path": "/path/to/A",
+    "git_url": "git@github.com:Example/A.git"
+  },
+  "B": {
+    "branch": "release",
+    "path": "/path/to/B",
+    "git_url": "git@github.com:Example/B.git"
+  }
+}
 ```
 
-## Functions Overview
+### Comparing Podfile.lock Files
 
-The gem provides the following key functionalities:
+To compare two `Podfile.lock` files and list differences in dependencies:
 
-- Parsing `Podfile.lock` content to extract pod dependencies.
-- Generating Podfile entries for local path or remote git branch dependencies.
-- Processing and formatting dependencies for correct integration into Podfiles.
+```shell
+ruby script.rb dif_pod --oldLockPath <path_to_old_Podfile.lock> --newLockPath <path_to_new_Podfile.lock> [--configPath <path_to_config.json>]
+```
 
-## Workflow
+- `oldLockPath`: Path to the older `Podfile.lock`.
+- `newLockPath`: Path to the newer `Podfile.lock`.
+- `configPath` (optional): Path to a JSON configuration file specifying which libraries to include in the comparison.
 
-1. **Configuration Preparation**: Prepare the `repo_configs` file with the necessary configuration for each library. This file should map library names to their configuration, including local path, branch name, and git URL.
+**Example JSON Configuration (`dif_pod_config.json`):**
 
-2. **Running the Gem**: Execute the gem with the required options. Based on the specified `depWay`, the gem will process the `Podfile.lock` file and the `repo_configs` to output the necessary Podfile entries.
+```json
+[
+  "A",
+  "B"
+]
+```
 
-3. **Integration**: After generating the Podfile entries, integrate them into your Podfile as needed. This allows you to switch between using local versions of libraries (for development or debugging) and their remote versions (for production or shared development).
+## Configuration
 
-## Note
+The configuration file for generating podfile entries should list each dependency along with its fetch method (path or branch) and relevant details. For comparing `Podfile.lock` files, the configuration file (optional) should list the names of the libraries to be included in the comparison.
 
-- Ensure that the `repo_configs` file is properly formatted and from a trusted source to avoid potential security risks.
+## Notes
+
+- Ensure the JSON configuration files are correctly formatted and located at the specified path.
+- The script provides output similar to git diff, with dependencies being added marked in green and those being removed marked in red.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at [example/check_dependencies](https://github.com/ITxiansheng/check_dependencies). This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/ITxiansheng/check_dependencies/blob/main/CODE_OF_CONDUCT.md).
+Feel free to fork this repository and submit pull requests to contribute to its development.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-```
+Specify your license or leave it blank if you haven't decided on one yet.
 
-This README provides an overview of the gem's installation, usage, functions, workflow, notes, contributing guidelines, and license information. Adjust as needed for your specific project and preferences.
+---
+
+Remember to replace placeholder texts with actual information relevant to your script and project. This README provides a basic structure and explanation for users on how to utilize your script effectively.
