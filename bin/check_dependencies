@@ -244,7 +244,13 @@ def red(text); colorize(text, 31); end
 def green(text); colorize(text, 32); end
 
 def read_json_array_from_file_as_set(file_path)
-  # 确保文件存在
+  # 检查 file_path 是否为 nil 或不是字符串
+  unless file_path.is_a?(String)
+    # 可以在这里抛出异常或返回一个空的 Set
+    raise ArgumentError, "file_path must be a String" unless file_path.is_a?(String)
+    return Set.new
+  end
+
   if File.exist?(file_path)
     # 读取文件内容
     file_content = File.read(file_path)
@@ -253,26 +259,28 @@ def read_json_array_from_file_as_set(file_path)
     # 将数组转换为 Set 并返回
     return json_array.to_set
   else
-    puts "File not found: #{file_path}"
-    exit
+    # 文件不存在时，也可以选择抛出异常或返回一个空的 Set
+    puts "File not found: #{file_path}" # 或者使用 raise "File not found: #{file_path}"
+    return Set.new
   end
-rescue JSON::ParserError => e
-  puts "Error parsing JSON from #{file_path}: #{e.message}"
-  exit
 end
 
 def compare_podfile_locks(old_lock_path, new_lock_path, config_path = nil)
-  config_set = read_json_array_from_file_as_set(config_path)
   
   old_pods = read_local_podfile_lock(old_lock_path)
   new_pods = read_local_podfile_lock(new_lock_path)
 
   old_unique_deps = find_shortest_paths(extract_unique_dependencies(old_pods)).to_set
   new_unique_deps = find_shortest_paths(extract_unique_dependencies(new_pods)).to_set
-  if !config_set.empty?
-      old_unique_deps = old_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
-      new_unique_deps = new_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
+  
+  unless config_path.nil?
+     config_set = read_json_array_from_file_as_set(config_path)
+     if !config_set.empty?
+         old_unique_deps = old_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
+         new_unique_deps = new_unique_deps.select { |dep| config_set.include?(dep.split('/').first) }
+     end
   end
+  
   only_in_old = old_unique_deps - new_unique_deps
   only_in_new = new_unique_deps - old_unique_deps
   
