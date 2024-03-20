@@ -18,7 +18,7 @@ end
 # Define and parse options based on the command
 options = {}
 global_options = OptionParser.new do |opts|
-  opts.banner = "Usage: script.rb [command] [options]"
+  opts.banner = "Usage: check_dependencies [command] [options]"
   opts.separator ""
   opts.separator "Commands:"
   opts.separator "  gen_pod: Generate podfile entries for new dependencies"
