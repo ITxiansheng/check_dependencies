@@ -23,7 +23,7 @@ This script provides utilities for iOS development with CocoaPods, including gen
 To generate new podfile entries based on a JSON configuration:
 
 ```shell
-ruby script.rb gen_pod --lockPath <path_to_Podfile.lock> --depWay <path_or_branch> --configPath <path_to_config.json>
+ruby check_dependencies.rb gen_pod --lockPath <path_to_Podfile.lock> --depWay <path_or_branch> --configPath <path_to_config.json>
 ```
 
 - `lockPath`: Path to your `Podfile.lock`.
@@ -52,7 +52,7 @@ ruby script.rb gen_pod --lockPath <path_to_Podfile.lock> --depWay <path_or_branc
 To compare two `Podfile.lock` files and list differences in dependencies:
 
 ```shell
-ruby script.rb dif_pod --oldLockPath <path_to_old_Podfile.lock> --newLockPath <path_to_new_Podfile.lock> [--configPath <path_to_config.json>]
+ruby check_dependencies.rb dif_pod --oldLockPath <path_to_old_Podfile.lock> --newLockPath <path_to_new_Podfile.lock> [--configPath <path_to_config.json>]
 ```
 
 - `oldLockPath`: Path to the older `Podfile.lock`.
