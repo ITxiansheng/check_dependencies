@@ -286,13 +286,11 @@ def compare_podfile_locks(old_lock_path, new_lock_path, config_path = nil)
   
   # 检查差异并决定退出状态
   if only_in_old.empty? && only_in_new.empty?
-    puts "没有差异，成功退出"
-    exit 0
+    puts "No differences!"
   else
-    puts "存在差异："
+    puts "Differences exist:"
     only_in_old.each { |dep| puts "#{red('-')} #{dep}" }
     only_in_new.each { |dep| puts "#{green('+')} #{dep}" }
-    exit 1
   end
 end
 
